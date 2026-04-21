@@ -346,53 +346,56 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
 @keyframes cvSpotFade { to { opacity: 1; } }
 
 /* ─── SCREEN PARTICLES / STARS ─── */
+/* ─── SCREEN SPARKS — smooth soft-glow circles only, no rotation ─── */
 .cv-spark {
-  position: absolute; pointer-events: none;
-  border-radius: 50%;
+  position: absolute; pointer-events: none; border-radius: 50%;
+  will-change: transform, opacity;
 }
-/* Standard floating sparks */
+
+/* Type A: gentle drift upward — fades in, floats, fades out */
 .cv-spark.drift {
   animation: cvSparkDrift var(--sdur,5s) ease-in-out var(--sdelay,0s) infinite;
 }
 @keyframes cvSparkDrift {
-  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
-  12%  { opacity: var(--sop, 0.6); }
-  85%  { opacity: var(--sop, 0.6); }
-  100% { transform: translateY(var(--srise,-60px)) translateX(var(--sdx,8px)) scale(0); opacity: 0; }
+  0%           { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; }
+  10%          { opacity: var(--sop, 0.55); }
+  80%          { opacity: var(--sop, 0.55); }
+  100%         { transform: translateY(var(--srise,-65px)) translateX(var(--sdx,6px)) scale(0); opacity: 0; }
 }
-/* Twinkling stars (pulse in place) */
-.cv-spark.twinkle {
-  border-radius: 50%;
-  animation: cvSparkTwinkle var(--sdur,3s) ease-in-out var(--sdelay,0s) infinite;
+
+/* Type B: bloom pulse — soft radial glow breathes in-and-out in place */
+.cv-spark.bloom {
+  animation: cvSparkBloom var(--sdur,3.5s) ease-in-out var(--sdelay,0s) infinite;
 }
-@keyframes cvSparkTwinkle {
-  0%,100% { opacity: 0;                transform: scale(0.4) rotate(0deg); }
-  25%     { opacity: var(--sop, 0.9);  transform: scale(1.2) rotate(45deg); }
-  50%     { opacity: var(--sop2,0.5);  transform: scale(0.7) rotate(90deg); }
-  75%     { opacity: var(--sop, 0.9);  transform: scale(1.1) rotate(135deg); }
+@keyframes cvSparkBloom {
+  0%,100% { transform: scale(0.3); opacity: 0; }
+  30%     { transform: scale(1.15); opacity: var(--sop, 0.8); }
+  60%     { transform: scale(0.85); opacity: var(--sop2, 0.45); }
+  80%     { transform: scale(1.05); opacity: var(--sop, 0.7); }
 }
-/* Cross/sparkle shape (4-armed star via box-shadow) */
-.cv-spark.cross {
-  border-radius: 50%;
-  animation: cvSparkCross var(--sdur,4s) ease-in-out var(--sdelay,0s) infinite;
+
+/* Type C: slow float with gentle size pulse (bokeh lanterns) */
+.cv-spark.lantern {
+  animation: cvSparkLantern var(--sdur,7s) ease-in-out var(--sdelay,0s) infinite;
 }
-@keyframes cvSparkCross {
-  0%,100% { opacity: 0; transform: scale(0) rotate(0deg); }
-  20%     { opacity: var(--sop,0.85); transform: scale(1) rotate(15deg); }
-  50%     { opacity: var(--sop2,0.4); transform: scale(0.7) rotate(45deg); }
-  80%     { opacity: var(--sop,0.85); transform: scale(1) rotate(75deg); }
+@keyframes cvSparkLantern {
+  0%           { transform: translateY(0) scale(0.7); opacity: 0; }
+  15%          { opacity: var(--sop, 0.4); }
+  50%          { transform: translateY(var(--srise,-40px)) scale(1.1); opacity: var(--sop, 0.4); }
+  85%          { opacity: var(--sop2, 0.2); }
+  100%         { transform: translateY(calc(var(--srise,-40px) * 2)) scale(0.5); opacity: 0; }
 }
-/* Shooting streak */
+
+/* Type D: shooting streak — stays smooth, no arms */
 .cv-spark.streak {
-  border-radius: 1px;
-  animation: cvSparkStreak var(--sdur,1.4s) ease-in var(--sdelay,0s) infinite;
-  opacity: 0;
+  border-radius: 2px; opacity: 0;
+  animation: cvSparkStreak var(--sdur,1.6s) ease-in var(--sdelay,0s) infinite;
 }
 @keyframes cvSparkStreak {
-  0%   { opacity: 0;   transform: translateX(0)   translateY(0)   scaleX(1); }
-  5%   { opacity: var(--sop, 0.7); }
-  50%  { opacity: 0.1; transform: translateX(var(--sdx,60px)) translateY(var(--srise,30px)) scaleX(3); }
-  100% { opacity: 0;   transform: translateX(var(--sdx,60px)) translateY(var(--srise,30px)) scaleX(1); }
+  0%   { opacity: 0;                transform: translateX(0)              translateY(0)              scaleX(0.5); }
+  8%   { opacity: var(--sop, 0.65); transform: translateX(0)              translateY(0)              scaleX(1.5); }
+  80%  { opacity: 0.08;             transform: translateX(var(--sdx,50px)) translateY(var(--srise,25px)) scaleX(2.5); }
+  100% { opacity: 0;                transform: translateX(var(--sdx,50px)) translateY(var(--srise,25px)) scaleX(0.5); }
 }
 
 /* ─── BACK TO TOP ─── */
@@ -569,7 +572,13 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
 .pet-rules-img {
   border-radius: var(--r-lg); width: 100%; margin-top: 1.5rem;
   box-shadow: var(--shadow-sm);
-  animation: petRulesFloat 6.5s ease-in-out 0.8s infinite;
+  transition: transform var(--t-slow) var(--ease), box-shadow var(--t-slow) var(--ease);
+  animation: petRulesFloat 6.2s ease-in-out 0.4s infinite;
+  transform-origin: center bottom;
+}
+.pet-rules-img:hover {
+  transform: scale(1.03) translateY(-5px) !important;
+  box-shadow: var(--shadow-md);
 }
 @keyframes petFloatLeft {
   0%,100% { transform: translateY(0)    rotate(0deg); }
@@ -582,8 +591,9 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   75%     { transform: translateY(-14px) rotate(1.2deg); }
 }
 @keyframes petRulesFloat {
-  0%,100% { transform: translateY(0); }
-  50%     { transform: translateY(-6px); }
+  0%,100% { transform: translateY(0)    rotate(0deg); }
+  35%     { transform: translateY(-10px) rotate(1deg); }
+  70%     { transform: translateY(-5px)  rotate(-0.8deg); }
 }
 .pet-content p { color: var(--dark-gray) !important; font-size: 1rem !important; margin-bottom: 1.5rem; }
 /* pet-rules-img now defined with animation above */
@@ -1424,91 +1434,94 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
     setTimeout(closeIntro, 6200);
     document.getElementById('cv-skip').addEventListener('click', closeIntro);
 
-    // Screen stars / particles
+    // Screen stars / particles — smooth soft glow only
     (function(){
       var c = document.getElementById('cv-sparks');
       if(!c) return;
-      var gold   = 'rgba(196,150,58,';
-      var cream  = 'rgba(245,237,214,';
-      var lav    = 'rgba(190,191,254,';
-      var amber  = 'rgba(220,130,40,';
+      var gold  = 'rgba(196,150,58,';
+      var cream = 'rgba(245,237,214,';
+      var lav   = 'rgba(190,191,254,';
+      var amber = 'rgba(220,120,30,';
 
-      // ── 1. Drifting sparks (20)
-      for(var i=0;i<20;i++){
-        var s=document.createElement('div');
-        s.className='cv-spark drift';
-        var sz=1.2+Math.random()*3.5;
-        var col=[gold,cream,lav,amber][Math.floor(Math.random()*4)];
-        var op=0.35+Math.random()*0.5;
-        var dx=(Math.random()-0.5)*30;
-        s.style.cssText='left:'+(Math.random()*100)+'%;top:'+(8+Math.random()*84)+'%;'
-          +'width:'+sz+'px;height:'+sz+'px;'
-          +'background:'+col+op+');'
-          +'--sdur:'+(4+Math.random()*5)+'s;--sdelay:'+(Math.random()*7)+'s;'
-          +'--sop:'+op+';--srise:'+(-(35+Math.random()*80))+'px;--sdx:'+dx+'px;'
-          +'box-shadow:0 0 '+(sz*3)+'px '+(sz)+'px '+col+(op*0.6)+');';
+      function mkSpark(type, opts) {
+        var s = document.createElement('div');
+        s.className = 'cv-spark ' + type;
+        var sz  = opts.sz  || 3;
+        var col = opts.col || gold;
+        var op  = opts.op  || 0.6;
+        var op2 = opts.op2 || op * 0.45;
+        // Pure soft glow — single radial bloom, no arms, no rotation
+        var gR  = opts.gR  || sz * 5;   // glow radius
+        var glow = '0 0 ' + gR + 'px ' + (gR*0.5) + 'px ' + col + (op*0.45) + '),'
+                 + '0 0 ' + (gR*2.2) + 'px ' + (gR*0.8) + 'px ' + col + (op*0.18) + ')';
+        var css = 'left:'+opts.x+'%;top:'+opts.y+'%;'
+          + 'width:'+sz+'px;height:'+sz+'px;'
+          + 'background:'+col+op+');'
+          + 'box-shadow:'+glow+';'
+          + '--sdur:'+opts.dur+'s;--sdelay:'+opts.delay+'s;'
+          + '--sop:'+op+';--sop2:'+op2+';';
+        if(opts.rise)  css += '--srise:'+opts.rise+'px;';
+        if(opts.dx)    css += '--sdx:'+opts.dx+'px;';
+        s.style.cssText = css;
         c.appendChild(s);
       }
 
-      // ── 2. Twinkling stars (18)
-      for(var i=0;i<18;i++){
-        var s=document.createElement('div');
-        s.className='cv-spark twinkle';
-        var sz=2+Math.random()*5;
-        var col=[gold,cream,lav][Math.floor(Math.random()*3)];
-        var op=0.6+Math.random()*0.4;
-        // Arm glow for cross shape
-        var glow='0 0 '+(sz*2)+'px '+(sz*1.5)+'px '+col+op+')'
-          +','+(-sz*3)+'px 0 '+(sz)+'px '+col+(op*0.4)+')'
-          +','+(sz*3)+'px 0 '+(sz)+'px '+col+(op*0.4)+')'
-          +',0 '+(-sz*3)+'px '+(sz)+'px '+col+(op*0.4)+')'
-          +',0 '+(sz*3)+'px '+(sz)+'px '+col+(op*0.4)+')';
-        s.style.cssText='left:'+(Math.random()*100)+'%;top:'+(5+Math.random()*88)+'%;'
-          +'width:'+sz+'px;height:'+sz+'px;'
-          +'background:'+col+op+');'
-          +'--sdur:'+(2.5+Math.random()*4)+'s;--sdelay:'+(Math.random()*8)+'s;'
-          +'--sop:'+op+';--sop2:'+(op*0.45)+';'
-          +'box-shadow:'+glow+';';
-        c.appendChild(s);
+      // ── A. Drift sparks (22): small, float up gently
+      for(var i=0;i<22;i++){
+        var cols=[gold,cream,lav,amber];
+        var sz = 1.5 + Math.random()*3;
+        mkSpark('drift',{
+          sz: sz, col: cols[i%cols.length],
+          op: 0.35+Math.random()*0.45, op2: 0,
+          x: Math.random()*100, y: 10+Math.random()*82,
+          dur: 4+Math.random()*5, delay: Math.random()*8,
+          rise: -(40+Math.random()*80), dx: (Math.random()-0.5)*25,
+          gR: sz*4
+        });
       }
 
-      // ── 3. Cross sparkles (10) - larger, more dramatic
+      // ── B. Bloom pulses (16): breathe in place, larger glow
+      for(var i=0;i<16;i++){
+        var cols=[gold,lav,cream];
+        var sz = 2+Math.random()*4.5;
+        mkSpark('bloom',{
+          sz: sz, col: cols[i%cols.length],
+          op: 0.55+Math.random()*0.4, op2: 0,
+          x: Math.random()*100, y: 5+Math.random()*88,
+          dur: 2.8+Math.random()*4, delay: Math.random()*9,
+          gR: sz*6
+        });
+      }
+
+      // ── C. Lantern floats (10): big bokeh blobs, drift slowly
       for(var i=0;i<10;i++){
-        var s=document.createElement('div');
-        s.className='cv-spark cross';
-        var sz=3+Math.random()*6;
-        var col=[gold,cream][Math.floor(Math.random()*2)];
-        var op=0.5+Math.random()*0.5;
-        var armLen=sz*4;
-        var glow='0 0 '+(sz*3)+'px '+(sz*2)+'px '+col+op+')'
-          +','+(-armLen)+'px 0 '+(sz*1.5)+'px '+col+(op*0.5)+')'
-          +','+(armLen)+'px 0 '+(sz*1.5)+'px '+col+(op*0.5)+')'
-          +',0 '+(-armLen)+'px '+(sz*1.5)+'px '+col+(op*0.5)+')'
-          +',0 '+(armLen)+'px '+(sz*1.5)+'px '+col+(op*0.5)+')';
-        s.style.cssText='left:'+(Math.random()*100)+'%;top:'+(5+Math.random()*88)+'%;'
-          +'width:'+sz+'px;height:'+sz+'px;'
-          +'background:'+col+op+');'
-          +'--sdur:'+(3+Math.random()*5)+'s;--sdelay:'+(Math.random()*9)+'s;'
-          +'--sop:'+op+';--sop2:'+(op*0.4)+';'
-          +'box-shadow:'+glow+';';
-        c.appendChild(s);
+        var sz = 4+Math.random()*8;
+        var col = i%2===0 ? gold : lav;
+        mkSpark('lantern',{
+          sz: sz, col: col,
+          op: 0.2+Math.random()*0.25, op2: 0,
+          x: Math.random()*100, y: 8+Math.random()*80,
+          dur: 6+Math.random()*6, delay: Math.random()*10,
+          rise: -(30+Math.random()*50),
+          gR: sz*7
+        });
       }
 
-      // ── 4. Shooting streaks (5)
+      // ── D. Shooting streaks (5): brief diagonal flashes
       for(var i=0;i<5;i++){
-        var s=document.createElement('div');
-        s.className='cv-spark streak';
-        var w=40+Math.random()*60;
-        var ang=20+Math.random()*30;
-        var col=[gold,cream][Math.floor(Math.random()*2)];
-        var op=0.5+Math.random()*0.4;
-        var dx=Math.cos(ang*Math.PI/180)*100;
-        var dy=Math.sin(ang*Math.PI/180)*100;
-        s.style.cssText='left:'+(Math.random()*80)+'%;top:'+(10+Math.random()*60)+'%;'
+        var s   = document.createElement('div');
+        s.className = 'cv-spark streak';
+        var w   = 30+Math.random()*50;
+        var ang = 15+Math.random()*25;
+        var col = i%2===0 ? gold : cream;
+        var op  = 0.5+Math.random()*0.35;
+        var dx  =  Math.cos(ang*Math.PI/180)*90;
+        var dy  =  Math.sin(ang*Math.PI/180)*90;
+        s.style.cssText = 'left:'+(Math.random()*80)+'%;top:'+(10+Math.random()*60)+'%;'
           +'width:'+w+'px;height:2px;'
           +'background:linear-gradient(90deg,'+col+op+') 0%,'+col+'0) 100%);'
           +'transform:rotate(-'+ang+'deg);transform-origin:left center;'
-          +'--sdur:'+(1.2+Math.random()*1.5)+'s;--sdelay:'+(Math.random()*12)+'s;'
+          +'--sdur:'+(1.2+Math.random()*1.4)+'s;--sdelay:'+(Math.random()*14)+'s;'
           +'--sop:'+op+';--sdx:'+dx+'px;--srise:'+dy+'px;';
         c.appendChild(s);
       }
