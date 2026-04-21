@@ -146,8 +146,8 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
 /* Glass wrapper (centers the whole cup) */
 .cv-glass-wrapper {
   position: relative;
-  width: clamp(200px, 36vmin, 290px);
-  height: clamp(300px, 54vmin, 440px);
+  width: clamp(240px, 44vmin, 340px);
+  height: clamp(360px, 62vmin, 510px);
   z-index: 5;
 }
 
@@ -345,16 +345,54 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
 }
 @keyframes cvSpotFade { to { opacity: 1; } }
 
-/* ─── SCREEN PARTICLES ─── */
+/* ─── SCREEN PARTICLES / STARS ─── */
 .cv-spark {
-  position: absolute; border-radius: 50%; pointer-events: none;
-  animation: cvSparkFloat var(--sdur,4s) ease-in-out var(--sdelay,0s) infinite;
+  position: absolute; pointer-events: none;
+  border-radius: 50%;
 }
-@keyframes cvSparkFloat {
-  0%   { transform: translateY(0)    scale(1);   opacity: 0; }
-  15%  { opacity: var(--sop, 0.55); }
-  80%  { opacity: var(--sop, 0.55); }
-  100% { transform: translateY(var(--srise,-50px)) scale(0); opacity: 0; }
+/* Standard floating sparks */
+.cv-spark.drift {
+  animation: cvSparkDrift var(--sdur,5s) ease-in-out var(--sdelay,0s) infinite;
+}
+@keyframes cvSparkDrift {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  12%  { opacity: var(--sop, 0.6); }
+  85%  { opacity: var(--sop, 0.6); }
+  100% { transform: translateY(var(--srise,-60px)) translateX(var(--sdx,8px)) scale(0); opacity: 0; }
+}
+/* Twinkling stars (pulse in place) */
+.cv-spark.twinkle {
+  border-radius: 50%;
+  animation: cvSparkTwinkle var(--sdur,3s) ease-in-out var(--sdelay,0s) infinite;
+}
+@keyframes cvSparkTwinkle {
+  0%,100% { opacity: 0;                transform: scale(0.4) rotate(0deg); }
+  25%     { opacity: var(--sop, 0.9);  transform: scale(1.2) rotate(45deg); }
+  50%     { opacity: var(--sop2,0.5);  transform: scale(0.7) rotate(90deg); }
+  75%     { opacity: var(--sop, 0.9);  transform: scale(1.1) rotate(135deg); }
+}
+/* Cross/sparkle shape (4-armed star via box-shadow) */
+.cv-spark.cross {
+  border-radius: 50%;
+  animation: cvSparkCross var(--sdur,4s) ease-in-out var(--sdelay,0s) infinite;
+}
+@keyframes cvSparkCross {
+  0%,100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  20%     { opacity: var(--sop,0.85); transform: scale(1) rotate(15deg); }
+  50%     { opacity: var(--sop2,0.4); transform: scale(0.7) rotate(45deg); }
+  80%     { opacity: var(--sop,0.85); transform: scale(1) rotate(75deg); }
+}
+/* Shooting streak */
+.cv-spark.streak {
+  border-radius: 1px;
+  animation: cvSparkStreak var(--sdur,1.4s) ease-in var(--sdelay,0s) infinite;
+  opacity: 0;
+}
+@keyframes cvSparkStreak {
+  0%   { opacity: 0;   transform: translateX(0)   translateY(0)   scaleX(1); }
+  5%   { opacity: var(--sop, 0.7); }
+  50%  { opacity: 0.1; transform: translateX(var(--sdx,60px)) translateY(var(--srise,30px)) scaleX(3); }
+  100% { opacity: 0;   transform: translateX(var(--sdx,60px)) translateY(var(--srise,30px)) scaleX(1); }
 }
 
 /* ─── BACK TO TOP ─── */
@@ -511,9 +549,44 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
 #pet-friendly h2 { color: var(--navy); margin-bottom: 1rem; }
 .pet-label { display: inline-block; background: var(--brown); color: var(--cream); padding: 0.375rem 1rem; border-radius: var(--r-full); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem; }
 .pet-grid { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 2rem; align-items: center; }
-.pet-side-img { border-radius: var(--r-xl); object-fit: cover; width: 100%; aspect-ratio: 3/4; box-shadow: var(--shadow-md); }
+.pet-side-img {
+  border-radius: var(--r-xl); object-fit: cover; width: 100%; aspect-ratio: 3/4;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--t-slow) var(--ease), box-shadow var(--t-slow) var(--ease);
+}
+.pet-side-img:first-child {
+  animation: petFloatLeft 5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+.pet-side-img:last-child {
+  animation: petFloatRight 5.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+.pet-side-img:hover {
+  transform: scale(1.04) translateY(-6px) !important;
+  box-shadow: var(--shadow-xl);
+}
+.pet-rules-img {
+  border-radius: var(--r-lg); width: 100%; margin-top: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  animation: petRulesFloat 6.5s ease-in-out 0.8s infinite;
+}
+@keyframes petFloatLeft {
+  0%,100% { transform: translateY(0)    rotate(0deg); }
+  30%     { transform: translateY(-12px) rotate(-1.5deg); }
+  70%     { transform: translateY(-6px)  rotate(0.8deg); }
+}
+@keyframes petFloatRight {
+  0%,100% { transform: translateY(-8px)  rotate(0.5deg); }
+  40%     { transform: translateY(0)     rotate(-0.5deg); }
+  75%     { transform: translateY(-14px) rotate(1.2deg); }
+}
+@keyframes petRulesFloat {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
 .pet-content p { color: var(--dark-gray) !important; font-size: 1rem !important; margin-bottom: 1.5rem; }
-.pet-rules-img { border-radius: var(--r-lg); width: 100%; margin-top: 1.5rem; box-shadow: var(--shadow-sm); }
+/* pet-rules-img now defined with animation above */
 
 /* ------------------------------------------------
    14. MENU (Enhanced)
@@ -1351,29 +1424,92 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
     setTimeout(closeIntro, 6200);
     document.getElementById('cv-skip').addEventListener('click', closeIntro);
 
-    // Screen particles
+    // Screen stars / particles
     (function(){
       var c = document.getElementById('cv-sparks');
       if(!c) return;
-      var cols = [
-        'rgba(196,150,58,', 'rgba(245,237,214,',
-        'rgba(190,191,254,', 'rgba(155,80,40,'
-      ];
-      for(var i = 0; i < 42; i++){
-        var s = document.createElement('div');
-        s.className = 'cv-spark';
-        var sz    = 1 + Math.random() * 3.5;
-        var x     = Math.random() * 100;
-        var y     = 10 + Math.random() * 85;
-        var dur   = 3.5 + Math.random() * 5;
-        var delay = Math.random() * 6;
-        var rise  = -(30 + Math.random() * 70);
-        var op    = 0.25 + Math.random() * 0.55;
-        var col   = cols[Math.floor(Math.random() * cols.length)];
-        s.style.cssText = 'left:'+x+'%;top:'+y+'%;width:'+sz+'px;height:'+sz+'px;'
+      var gold   = 'rgba(196,150,58,';
+      var cream  = 'rgba(245,237,214,';
+      var lav    = 'rgba(190,191,254,';
+      var amber  = 'rgba(220,130,40,';
+
+      // ── 1. Drifting sparks (20)
+      for(var i=0;i<20;i++){
+        var s=document.createElement('div');
+        s.className='cv-spark drift';
+        var sz=1.2+Math.random()*3.5;
+        var col=[gold,cream,lav,amber][Math.floor(Math.random()*4)];
+        var op=0.35+Math.random()*0.5;
+        var dx=(Math.random()-0.5)*30;
+        s.style.cssText='left:'+(Math.random()*100)+'%;top:'+(8+Math.random()*84)+'%;'
+          +'width:'+sz+'px;height:'+sz+'px;'
           +'background:'+col+op+');'
-          +'--sdur:'+dur+'s;--sdelay:'+delay+'s;--sop:'+op+';--srise:'+rise+'px;'
-          +'box-shadow:0 0 '+(sz*2)+'px '+col+op+');';
+          +'--sdur:'+(4+Math.random()*5)+'s;--sdelay:'+(Math.random()*7)+'s;'
+          +'--sop:'+op+';--srise:'+(-(35+Math.random()*80))+'px;--sdx:'+dx+'px;'
+          +'box-shadow:0 0 '+(sz*3)+'px '+(sz)+'px '+col+(op*0.6)+');';
+        c.appendChild(s);
+      }
+
+      // ── 2. Twinkling stars (18)
+      for(var i=0;i<18;i++){
+        var s=document.createElement('div');
+        s.className='cv-spark twinkle';
+        var sz=2+Math.random()*5;
+        var col=[gold,cream,lav][Math.floor(Math.random()*3)];
+        var op=0.6+Math.random()*0.4;
+        // Arm glow for cross shape
+        var glow='0 0 '+(sz*2)+'px '+(sz*1.5)+'px '+col+op+')'
+          +','+(-sz*3)+'px 0 '+(sz)+'px '+col+(op*0.4)+')'
+          +','+(sz*3)+'px 0 '+(sz)+'px '+col+(op*0.4)+')'
+          +',0 '+(-sz*3)+'px '+(sz)+'px '+col+(op*0.4)+')'
+          +',0 '+(sz*3)+'px '+(sz)+'px '+col+(op*0.4)+')';
+        s.style.cssText='left:'+(Math.random()*100)+'%;top:'+(5+Math.random()*88)+'%;'
+          +'width:'+sz+'px;height:'+sz+'px;'
+          +'background:'+col+op+');'
+          +'--sdur:'+(2.5+Math.random()*4)+'s;--sdelay:'+(Math.random()*8)+'s;'
+          +'--sop:'+op+';--sop2:'+(op*0.45)+';'
+          +'box-shadow:'+glow+';';
+        c.appendChild(s);
+      }
+
+      // ── 3. Cross sparkles (10) - larger, more dramatic
+      for(var i=0;i<10;i++){
+        var s=document.createElement('div');
+        s.className='cv-spark cross';
+        var sz=3+Math.random()*6;
+        var col=[gold,cream][Math.floor(Math.random()*2)];
+        var op=0.5+Math.random()*0.5;
+        var armLen=sz*4;
+        var glow='0 0 '+(sz*3)+'px '+(sz*2)+'px '+col+op+')'
+          +','+(-armLen)+'px 0 '+(sz*1.5)+'px '+col+(op*0.5)+')'
+          +','+(armLen)+'px 0 '+(sz*1.5)+'px '+col+(op*0.5)+')'
+          +',0 '+(-armLen)+'px '+(sz*1.5)+'px '+col+(op*0.5)+')'
+          +',0 '+(armLen)+'px '+(sz*1.5)+'px '+col+(op*0.5)+')';
+        s.style.cssText='left:'+(Math.random()*100)+'%;top:'+(5+Math.random()*88)+'%;'
+          +'width:'+sz+'px;height:'+sz+'px;'
+          +'background:'+col+op+');'
+          +'--sdur:'+(3+Math.random()*5)+'s;--sdelay:'+(Math.random()*9)+'s;'
+          +'--sop:'+op+';--sop2:'+(op*0.4)+';'
+          +'box-shadow:'+glow+';';
+        c.appendChild(s);
+      }
+
+      // ── 4. Shooting streaks (5)
+      for(var i=0;i<5;i++){
+        var s=document.createElement('div');
+        s.className='cv-spark streak';
+        var w=40+Math.random()*60;
+        var ang=20+Math.random()*30;
+        var col=[gold,cream][Math.floor(Math.random()*2)];
+        var op=0.5+Math.random()*0.4;
+        var dx=Math.cos(ang*Math.PI/180)*100;
+        var dy=Math.sin(ang*Math.PI/180)*100;
+        s.style.cssText='left:'+(Math.random()*80)+'%;top:'+(10+Math.random()*60)+'%;'
+          +'width:'+w+'px;height:2px;'
+          +'background:linear-gradient(90deg,'+col+op+') 0%,'+col+'0) 100%);'
+          +'transform:rotate(-'+ang+'deg);transform-origin:left center;'
+          +'--sdur:'+(1.2+Math.random()*1.5)+'s;--sdelay:'+(Math.random()*12)+'s;'
+          +'--sop:'+op+';--sdx:'+dx+'px;--srise:'+dy+'px;';
         c.appendChild(s);
       }
     })();
