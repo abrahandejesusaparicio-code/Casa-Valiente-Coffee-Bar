@@ -149,13 +149,19 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   width: clamp(260px, 47vmin, 365px);
   height: clamp(380px, 65vmin, 530px);
   z-index: 5;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Clipped interior — liquid, bubbles, ice and text live here */
 .cv-glass {
   position: absolute; inset: 0;
   clip-path: polygon(9% 0%, 91% 0%, 83% 100%, 17% 100%);
+  -webkit-clip-path: polygon(9% 0%, 91% 0%, 83% 100%, 17% 100%);
   overflow: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  isolation: isolate;
 }
 
 /* Rising coffee liquid */
@@ -166,6 +172,7 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   background: linear-gradient(to top,
     #0A0200 0%, #1A0905 15%, #3A1808 40%,
     #5C2E12 65%, #7B4020 82%, #9B5020 100%);
+  will-change: height;
 }
 @keyframes cvLiquidFill { 0%{height:0%} 100%{height:92%} }
 
@@ -176,6 +183,7 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   display: flex;
   animation: cvWaveScroll 3.5s linear infinite;
   z-index: 2;
+  will-change: transform;
 }
 @keyframes cvWaveScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .cv-wave-svg { width: 50%; height: 100%; flex-shrink: 0; }
@@ -188,6 +196,7 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   border: 1px solid rgba(255,255,255,0.14);
   animation: cvBubbleRise var(--dur,2.5s) ease-in var(--bdelay,0s) infinite;
   z-index: 4;
+  will-change: transform, opacity;
 }
 @keyframes cvBubbleRise {
   0%   { transform: translateY(0)     translateX(0);              opacity: 0; }
@@ -803,6 +812,32 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
   .contacto-actions { flex-direction: column; }
   .btn-whatsapp, .btn-maps, .btn-waze { align-self: stretch; justify-content: center; }
   .sobre-images { height: 340px; }
+}
+
+/* ─── MOBILE: Intro animation simplified ─── */
+@media (max-width: 768px) {
+  /* Skip fill animation — show liquid full instantly, fade glass in */
+  .cv-liquid {
+    height: 92%;
+    animation: none;
+    will-change: auto;
+  }
+  /* Fade the glass wrapper in (opacity = GPU composited, no reflow) */
+  .cv-glass-wrapper {
+    width: clamp(220px, 72vw, 280px);
+    height: clamp(320px, 105vw, 420px);
+    opacity: 0;
+    animation: cvMobileFadeIn 0.9s ease 0.4s forwards;
+  }
+  @keyframes cvMobileFadeIn { to { opacity: 1; } }
+  /* Keep only first 4 bubbles */
+  .cv-bubble:nth-child(n+5) { display: none; }
+  /* Drop ice without bob (simpler animation) */
+  .cv-ice-1 { animation: cvIceDrop 0.55s cubic-bezier(0.25,0.46,0.45,0.94) 0.6s forwards; }
+  .cv-ice-2 { animation: cvIceDrop 0.55s cubic-bezier(0.25,0.46,0.45,0.94) 0.95s forwards; }
+  .cv-ice-3 { animation: cvIceDrop 0.55s cubic-bezier(0.25,0.46,0.45,0.94) 1.3s forwards; }
+  /* Hide spotlight */
+  .cv-spotlight { display: none; }
 }
   </style>
 </head>
@@ -1466,8 +1501,13 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         c.appendChild(s);
       }
 
-      // ── A. Drift sparks (22): small, float up gently
-      for(var i=0;i<22;i++){
+      // ── A. Drift sparks: small, float up gently
+      var isMobile = window.innerWidth < 768;
+      var driftCount  = isMobile ? 5  : 22;
+      var bloomCount  = isMobile ? 4  : 16;
+      var lanternCount= isMobile ? 2  : 10;
+      var streakCount = isMobile ? 1  : 5;
+      for(var i=0;i<driftCount;i++){
         var cols=[gold,cream,lav,amber];
         var sz = 1.5 + Math.random()*3;
         mkSpark('drift',{
@@ -1480,8 +1520,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         });
       }
 
-      // ── B. Bloom pulses (16): breathe in place, larger glow
-      for(var i=0;i<16;i++){
+      // ── B. Bloom pulses: breathe in place, larger glow
+      for(var i=0;i<bloomCount;i++){
         var cols=[gold,lav,cream];
         var sz = 2+Math.random()*4.5;
         mkSpark('bloom',{
@@ -1493,8 +1533,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         });
       }
 
-      // ── C. Lantern floats (10): big bokeh blobs, drift slowly
-      for(var i=0;i<10;i++){
+      // ── C. Lantern floats: big bokeh blobs, drift slowly
+      for(var i=0;i<lanternCount;i++){
         var sz = 4+Math.random()*8;
         var col = i%2===0 ? gold : lav;
         mkSpark('lantern',{
@@ -1507,8 +1547,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         });
       }
 
-      // ── D. Shooting streaks (5): brief diagonal flashes
-      for(var i=0;i<5;i++){
+      // ── D. Shooting streaks: brief diagonal flashes
+      for(var i=0;i<streakCount;i++){
         var s   = document.createElement('div');
         s.className = 'cv-spark streak';
         var w   = 30+Math.random()*50;
