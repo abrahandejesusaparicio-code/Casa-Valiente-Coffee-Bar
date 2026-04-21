@@ -128,7 +128,7 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
 .btn-dark { background: var(--navy); color: var(--cream); border: 2px solid transparent; }
 .btn-dark:hover { background: var(--indigo); transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-/* ─── INTRO: Coffee Pour + Straw Drop ─── */
+/* ─── INTRO: Glass Animation ─── */
 #cv-intro {
   position: fixed; inset: 0; z-index: 9999;
   background: #060301;
@@ -141,95 +141,184 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
   background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);
 }
-.cv-coffee-layer {
-  position: absolute; inset: 0;
-  transform: translateY(100%);
-  animation: cvCoffeeRise 2.8s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
-  z-index: 1;
-  background: linear-gradient(to top,
-    #060201 0%, #1A0905 18%, #3A1A08 45%,
-    #5C2E12 70%, #7B4020 88%, #9B5828 100%);
-  overflow: visible;
+
+/* Glass wrapper (centers the whole cup) */
+.cv-glass-wrapper {
+  position: relative;
+  width: clamp(200px, 36vmin, 290px);
+  height: clamp(300px, 54vmin, 440px);
+  z-index: 5;
 }
-@keyframes cvCoffeeRise { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+/* Clipped interior — liquid, bubbles, ice and text live here */
+.cv-glass {
+  position: absolute; inset: 0;
+  clip-path: polygon(9% 0%, 91% 0%, 83% 100%, 17% 100%);
+  overflow: hidden;
+}
+
+/* Rising coffee liquid */
+.cv-liquid {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 0%;
+  animation: cvLiquidFill 3s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
+  background: linear-gradient(to top,
+    #0A0200 0%, #1A0905 15%, #3A1808 40%,
+    #5C2E12 65%, #7B4020 82%, #9B5020 100%);
+}
+@keyframes cvLiquidFill { 0%{height:0%} 100%{height:92%} }
+
+/* Wave surface on liquid */
 .cv-wave-row {
-  position: absolute;
-  top: -58px; left: 0;
-  width: 200%; height: 68px;
+  position: absolute; top: -52px; left: 0;
+  width: 200%; height: 60px;
   display: flex;
   animation: cvWaveScroll 3.5s linear infinite;
   z-index: 2;
 }
 @keyframes cvWaveScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .cv-wave-svg { width: 50%; height: 100%; flex-shrink: 0; }
+
+/* Bubbles rising inside liquid */
+.cv-bubble {
+  position: absolute; bottom: 2%; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%,
+    rgba(255,255,255,0.38), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.14);
+  animation: cvBubbleRise var(--dur,2.5s) ease-in var(--bdelay,0s) infinite;
+  z-index: 4;
+}
+@keyframes cvBubbleRise {
+  0%   { transform: translateY(0)     translateX(0);              opacity: 0; }
+  8%   { opacity: 0.85; }
+  85%  { opacity: 0.35; }
+  100% { transform: translateY(-460px) translateX(var(--sway,6px)); opacity: 0; }
+}
+
+/* Ice cubes */
+.cv-ice {
+  position: absolute;
+  background: linear-gradient(135deg,
+    rgba(210,235,255,0.65) 0%,
+    rgba(170,210,255,0.40) 50%,
+    rgba(230,245,255,0.25) 100%);
+  border: 1px solid rgba(255,255,255,0.50);
+  border-radius: 4px;
+  z-index: 8; opacity: 0;
+  box-shadow: inset 1px 1px 4px rgba(255,255,255,0.45),
+              0 2px 8px rgba(0,0,0,0.35);
+}
+.cv-ice-1 {
+  width:44px; height:36px; left:15%; bottom:58%;
+  animation: cvIceDrop 0.55s cubic-bezier(0.25,0.46,0.45,0.94) 0.6s forwards,
+             cvIceBob  2.4s ease-in-out 1.2s infinite;
+}
+.cv-ice-2 {
+  width:36px; height:30px; left:52%; bottom:54%;
+  animation: cvIceDrop 0.55s cubic-bezier(0.25,0.46,0.45,0.94) 0.95s forwards,
+             cvIceBob  2.8s ease-in-out 1.55s infinite;
+}
+.cv-ice-3 {
+  width:40px; height:32px; left:32%; bottom:65%;
+  animation: cvIceDrop 0.55s cubic-bezier(0.25,0.46,0.45,0.94) 1.3s forwards,
+             cvIceBob  2.2s ease-in-out 1.9s infinite;
+}
+@keyframes cvIceDrop {
+  0%   { opacity:0;    transform: rotate(-15deg) translateY(-220px); }
+  75%  { opacity:0.88; transform: rotate(-15deg) translateY(10px); }
+  100% { opacity:0.82; transform: rotate(-15deg) translateY(0); }
+}
+@keyframes cvIceBob {
+  0%,100% { transform: rotate(-15deg) translateY(0); }
+  50%     { transform: rotate(-12deg) translateY(-5px); }
+}
+
+/* SVG glass frame overlay */
+.cv-glass-frame {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 20;
+}
+
+/* Text inside glass */
+.cv-inner {
+  position: absolute; bottom: 22%; left: 50%;
+  transform: translateX(-50%);
+  z-index: 15; width: 82%; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.7rem;
+}
+
+/* Straw */
 .cv-straw {
   position: absolute;
-  left: calc(50% + 22px);
-  top: -230px;
-  width: 9px; height: 230px;
+  left: calc(50% + 24px);
+  top: -200px;
+  width: 9px; height: 220px;
   background: linear-gradient(90deg,
     rgba(245,237,214,0.92) 0%,
-    rgba(228,212,178,1) 30%,
+    rgba(228,212,178,1)    30%,
     rgba(245,237,214,0.75) 65%,
     rgba(228,215,185,0.88) 100%);
   border-radius: 5px 5px 2px 2px;
-  transform: rotate(14deg);
+  transform: rotate(12deg);
   transform-origin: bottom center;
-  z-index: 10; opacity: 0;
+  z-index: 25; opacity: 0;
   animation:
-    cvStrawAppear 0.05s linear 0.85s forwards,
-    cvStrawFall 0.55s cubic-bezier(0.25,0.46,0.45,0.94) 0.9s forwards;
+    cvStrawAppear 0.05s linear 0.9s  forwards,
+    cvStrawFall   0.55s cubic-bezier(0.25,0.46,0.45,0.94) 0.95s forwards;
 }
 @keyframes cvStrawAppear { to{opacity:1} }
 @keyframes cvStrawFall {
-  0%   { top: -230px; transform: rotate(14deg); }
-  65%  { top: 42%;    transform: rotate(14deg); }
-  80%  { top: 40%;    transform: rotate(17deg); }
-  90%  { top: 41%;    transform: rotate(12deg); }
-  100% { top: 40%;    transform: rotate(15deg); }
+  0%   { top:-200px; transform:rotate(12deg); }
+  65%  { top:28%;    transform:rotate(12deg); }
+  80%  { top:26%;    transform:rotate(15deg); }
+  90%  { top:27%;    transform:rotate(10deg); }
+  100% { top:26%;    transform:rotate(13deg); }
 }
-.cv-droplets { position: absolute; inset: 0; z-index: 9; pointer-events: none; }
+
+.cv-droplets { position:absolute; inset:0; z-index:9; pointer-events:none; }
 .cv-drop {
-  position: absolute; border-radius: 50%; pointer-events: none;
+  position:absolute; border-radius:50%; pointer-events:none;
   animation: cvDropFly 0.9s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
 }
 @keyframes cvDropFly {
-  0%   { opacity:1;   transform: translate(0,0) scale(1); }
+  0%   { opacity:1;   transform:translate(0,0) scale(1); }
   75%  { opacity:0.7; }
-  100% { opacity:0;   transform: translate(var(--dx),var(--dy)) scale(0.15); }
+  100% { opacity:0;   transform:translate(var(--dx),var(--dy)) scale(0.15); }
 }
-.cv-inner {
-  position: relative; z-index: 10;
-  display: flex; flex-direction: column; align-items: center; gap: 0.9rem;
-  text-align: center;
-}
+
 .cv-star {
-  width: clamp(36px,6vmin,50px); height: clamp(36px,6vmin,50px);
-  color: #F5EDD6; opacity: 0; transform: scale(0.55);
+  width:clamp(26px,4vmin,36px); height:clamp(26px,4vmin,36px);
+  color:#F5EDD6; opacity:0; transform:scale(0.55);
   transition: opacity 0.65s ease, transform 0.65s cubic-bezier(0.34,1.56,0.64,1);
-  filter: drop-shadow(0 0 14px rgba(196,150,58,0.65));
+  filter: drop-shadow(0 0 12px rgba(196,150,58,0.75));
 }
 .cv-star.show { opacity:1; transform:scale(1); }
-.cv-words { display:flex; gap:0.8rem; align-items:baseline; }
+.cv-words { display:flex; gap:0.6rem; align-items:baseline; }
 .cv-word {
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  font-weight: 800; font-size: clamp(1.6rem,4vw,2.4rem);
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: #E0CFA8; opacity: 0; transform: translateY(14px);
-  text-shadow: 0 0 30px rgba(196,150,58,0.15);
-  transition: opacity 0.55s ease, transform 0.55s ease, color 0.55s ease, text-shadow 0.55s ease;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  font-weight:800; font-size:clamp(1.35rem,3.2vw,1.9rem);
+  letter-spacing:0.16em; text-transform:uppercase;
+  color:#E0CFA8; opacity:0; transform:translateY(14px);
+  text-shadow:0 0 30px rgba(196,150,58,0.15);
+  transition: opacity 0.55s ease, transform 0.55s ease,
+              color 0.55s ease, text-shadow 0.55s ease;
 }
 .cv-word.show { opacity:1; transform:translateY(0); }
-.cv-word.lit  { color:#F5EDD6; text-shadow: 0 0 18px rgba(196,150,58,0.9), 0 0 55px rgba(196,150,58,0.4), 0 0 100px rgba(190,191,254,0.12); }
+.cv-word.lit  {
+  color:#F5EDD6;
+  text-shadow:0 0 18px rgba(196,150,58,0.9),
+              0 0 55px rgba(196,150,58,0.4),
+              0 0 100px rgba(190,191,254,0.12);
+}
 .cv-tagline {
-  font-size: clamp(0.55rem,1.1vw,0.7rem); letter-spacing: 0.24em;
-  text-transform: uppercase; color: rgba(190,191,254,0.5); opacity: 0;
+  font-size:clamp(0.48rem,0.95vw,0.6rem); letter-spacing:0.22em;
+  text-transform:uppercase; color:rgba(190,191,254,0.65); opacity:0;
   transition: opacity 0.9s ease;
 }
 .cv-tagline.show { opacity:1; }
 .cv-skip {
-  position: absolute; bottom:2rem; right:2.5rem; z-index:20;
-  font-size: 0.7rem; letter-spacing:0.14em; color:rgba(245,237,214,0.35);
+  position:absolute; bottom:2rem; right:2.5rem; z-index:20;
+  font-size:0.7rem; letter-spacing:0.14em; color:rgba(245,237,214,0.35);
   cursor:pointer; opacity:0;
   transition: opacity 0.6s ease, color 0.3s, border-color 0.3s;
   background:none; border:1px solid rgba(245,237,214,0.15);
@@ -240,7 +329,7 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
 
 /* ─── BACK TO TOP ─── */
 #back-to-top {
-  position: fixed; bottom: 2rem; right: 2rem; z-index: 500;
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 9000;
   width: 48px; height: 48px; border-radius: 50%;
   background: var(--indigo); color: var(--cream);
   display: flex; align-items: center; justify-content: center;
@@ -610,32 +699,75 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
      INTRO ANIMADO: Coffee Pour + Straw Drop
      ============================================================ -->
 <div id="cv-intro">
-  <!-- Rising coffee layer with scrolling wave surface -->
-  <div class="cv-coffee-layer">
-    <div class="cv-wave-row">
-      <svg class="cv-wave-svg" viewBox="0 0 1440 68" preserveAspectRatio="none">
-        <path d="M0,38 C180,68 360,8 540,38 C720,68 900,8 1080,38 C1260,68 1350,22 1440,38 L1440,68 L0,68 Z" fill="#9B5828"/>
-      </svg>
-      <svg class="cv-wave-svg" viewBox="0 0 1440 68" preserveAspectRatio="none">
-        <path d="M0,38 C180,68 360,8 540,38 C720,68 900,8 1080,38 C1260,68 1350,22 1440,38 L1440,68 L0,68 Z" fill="#9B5828"/>
-      </svg>
-    </div>
-  </div>
-  <!-- Straw -->
+  <!-- Glass cup wrapper -->
+  <div class="cv-glass-wrapper">
+
+    <!-- Clipped interior: liquid + bubbles + ice + text -->
+    <div class="cv-glass">
+      <div class="cv-liquid">
+        <div class="cv-wave-row">
+          <svg class="cv-wave-svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
+            <path d="M0,34 C180,60 360,8 540,34 C720,60 900,8 1080,34 C1260,60 1350,20 1440,34 L1440,60 L0,60 Z" fill="#9B5828"/>
+          </svg>
+          <svg class="cv-wave-svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
+            <path d="M0,34 C180,60 360,8 540,34 C720,60 900,8 1080,34 C1260,60 1350,20 1440,34 L1440,60 L0,60 Z" fill="#9B5828"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Bubbles (10, varied size/timing/sway) -->
+      <div class="cv-bubble" style="width:5px;height:5px;left:22%;--dur:2.6s;--bdelay:0.3s;--sway:5px"></div>
+      <div class="cv-bubble" style="width:4px;height:4px;left:38%;--dur:3.1s;--bdelay:0.8s;--sway:-4px"></div>
+      <div class="cv-bubble" style="width:6px;height:6px;left:55%;--dur:2.3s;--bdelay:1.2s;--sway:7px"></div>
+      <div class="cv-bubble" style="width:3px;height:3px;left:70%;--dur:3.6s;--bdelay:0.5s;--sway:-6px"></div>
+      <div class="cv-bubble" style="width:5px;height:5px;left:28%;--dur:2.9s;--bdelay:1.6s;--sway:3px"></div>
+      <div class="cv-bubble" style="width:4px;height:4px;left:62%;--dur:2.1s;--bdelay:2.1s;--sway:-5px"></div>
+      <div class="cv-bubble" style="width:6px;height:6px;left:45%;--dur:3.4s;--bdelay:0.2s;--sway:8px"></div>
+      <div class="cv-bubble" style="width:3px;height:3px;left:18%;--dur:2.7s;--bdelay:2.5s;--sway:-3px"></div>
+      <div class="cv-bubble" style="width:5px;height:5px;left:75%;--dur:3.0s;--bdelay:1.0s;--sway:6px"></div>
+      <div class="cv-bubble" style="width:4px;height:4px;left:50%;--dur:2.4s;--bdelay:1.8s;--sway:-7px"></div>
+
+      <!-- Ice cubes (3, staggered fall times) -->
+      <div class="cv-ice cv-ice-1"></div>
+      <div class="cv-ice cv-ice-2"></div>
+      <div class="cv-ice cv-ice-3"></div>
+
+      <!-- Title (rendered INSIDE the glass) -->
+      <div class="cv-inner">
+        <svg class="cv-star" id="cv-star" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,5 57.65,31.52 81.82,18.18 68.48,42.35 95,50 68.48,57.65 81.82,81.82 57.65,68.48 50,95 42.35,68.48 18.18,81.82 31.52,57.65 5,50 31.52,42.35 18.18,18.18 42.35,31.52" fill="currentColor" opacity="0.95"/>
+        </svg>
+        <div class="cv-words">
+          <span class="cv-word" id="cvw-0">Casa</span>
+          <span class="cv-word" id="cvw-1">Valiente</span>
+        </div>
+        <span class="cv-tagline" id="cv-tagline">Tu lugar de encuentros &middot; El Cangrejo</span>
+      </div>
+    </div><!-- /.cv-glass -->
+
+    <!-- Glass frame SVG overlay (drawn on top, not clipped) -->
+    <svg class="cv-glass-frame" viewBox="0 0 290 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Main trapezoid outline -->
+      <path d="M26 3 L264 3 L241 437 L49 437 Z"
+            stroke="rgba(255,255,255,0.18)" stroke-width="2"
+            fill="rgba(255,255,255,0.012)"/>
+      <!-- Top rim highlight -->
+      <line x1="26" y1="3" x2="264" y2="3"
+            stroke="rgba(255,255,255,0.55)" stroke-width="4" stroke-linecap="round"/>
+      <!-- Left wall highlight -->
+      <path d="M36 14 L48 408"
+            stroke="rgba(255,255,255,0.09)" stroke-width="8" stroke-linecap="round"/>
+      <!-- Bottom edge -->
+      <line x1="51" y1="432" x2="239" y2="432"
+            stroke="rgba(255,255,255,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+
+  </div><!-- /.cv-glass-wrapper -->
+
+  <!-- Straw (outside wrapper so it pokes out above the rim) -->
   <div class="cv-straw" id="cv-straw"></div>
   <!-- Droplets -->
   <div class="cv-droplets" id="cv-droplets"></div>
-  <!-- Logo + text -->
-  <div class="cv-inner">
-    <svg class="cv-star" id="cv-star" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="50,5 57.65,31.52 81.82,18.18 68.48,42.35 95,50 68.48,57.65 81.82,81.82 57.65,68.48 50,95 42.35,68.48 18.18,81.82 31.52,57.65 5,50 31.52,42.35 18.18,18.18 42.35,31.52" fill="currentColor" opacity="0.95"/>
-    </svg>
-    <div class="cv-words">
-      <span class="cv-word" id="cvw-0">Casa</span>
-      <span class="cv-word" id="cvw-1">Valiente</span>
-    </div>
-    <span class="cv-tagline" id="cv-tagline">Tu lugar de encuentros &middot; El Cangrejo</span>
-  </div>
   <button class="cv-skip" id="cv-skip">Entrar &rsaquo;</button>
 </div>
 
@@ -1305,7 +1437,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
   // ── BACK TO TOP ──────────────────────────────────────────────
   var btt = document.getElementById('back-to-top');
   window.addEventListener('scroll', function(){
-    btt.classList.toggle('visible', window.scrollY > 400);
+    var scrolled = window.scrollY || document.documentElement.scrollTop || 0;
+    btt.classList.toggle('visible', scrolled > 300);
   }, { passive:true });
   btt.addEventListener('click', function(){
     window.scrollTo({ top:0, behavior:'smooth' });
