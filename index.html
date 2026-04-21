@@ -149,33 +149,47 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   width: clamp(260px, 47vmin, 365px);
   height: clamp(380px, 65vmin, 530px);
   z-index: 5;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Clipped interior — liquid, bubbles, ice and text live here */
 .cv-glass {
   position: absolute; inset: 0;
   clip-path: polygon(9% 0%, 91% 0%, 83% 100%, 17% 100%);
+  -webkit-clip-path: polygon(9% 0%, 91% 0%, 83% 100%, 17% 100%);
   overflow: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  isolation: isolate;
 }
 
-/* Rising coffee liquid */
+/* Rising coffee liquid — uses scaleY (GPU-composited, no reflow) */
 .cv-liquid {
   position: absolute; bottom: 0; left: 0; right: 0;
-  height: 0%;
+  height: 92%;
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  -webkit-transform: scaleY(0);
+  -webkit-transform-origin: bottom center;
+  will-change: transform;
   animation: cvLiquidFill 3s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
   background: linear-gradient(to top,
     #0A0200 0%, #1A0905 15%, #3A1808 40%,
     #5C2E12 65%, #7B4020 82%, #9B5020 100%);
 }
-@keyframes cvLiquidFill { 0%{height:0%} 100%{height:92%} }
+@keyframes cvLiquidFill { 0%{transform:scaleY(0)} 100%{transform:scaleY(1)} }
 
-/* Wave surface on liquid */
+/* Wave surface — sibling of liquid, bottom-anchored to match liquid top */
 .cv-wave-row {
-  position: absolute; top: -52px; left: 0;
+  position: absolute;
+  bottom: 84%; /* sits just above where liquid surface ends at scaleY(1) */
+  left: 0;
   width: 200%; height: 60px;
   display: flex;
+  will-change: transform;
   animation: cvWaveScroll 3.5s linear infinite;
-  z-index: 2;
+  z-index: 3;
 }
 @keyframes cvWaveScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .cv-wave-svg { width: 50%; height: 100%; flex-shrink: 0; }
@@ -188,6 +202,9 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   border: 1px solid rgba(255,255,255,0.14);
   animation: cvBubbleRise var(--dur,2.5s) ease-in var(--bdelay,0s) infinite;
   z-index: 4;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 @keyframes cvBubbleRise {
   0%   { transform: translateY(0)     translateX(0);              opacity: 0; }
@@ -263,6 +280,7 @@ p  { font-size: clamp(0.9375rem, 1.5vw, 1.0625rem); color: var(--text-muted); li
   transform: rotate(12deg);
   transform-origin: bottom center;
   z-index: 25; opacity: 0;
+  will-change: transform, top, opacity;
   animation:
     cvStrawAppear 0.05s linear 0.9s  forwards,
     cvStrawFall   0.55s cubic-bezier(0.25,0.46,0.45,0.94) 0.95s forwards;
@@ -779,6 +797,22 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
   .pet-grid { grid-template-columns: 1fr 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ─── MOBILE: Reduce intro animation load ─── */
+@media (max-width: 480px) {
+  /* Fewer bubbles visible on small phones */
+  .cv-bubble:nth-child(n+7) { display: none; }
+  /* Simpler ice — no bob animation on weakest devices */
+  .cv-ice { animation-name: cvIceDrop !important; }
+  /* Spotlight off on mobile — save a compositing layer */
+  .cv-spotlight { display: none; }
+  /* Slightly smaller glass on phones */
+  .cv-glass-wrapper {
+    width: clamp(220px, 72vw, 280px);
+    height: clamp(320px, 105vw, 420px);
+  }
+}
+
 @media (max-width: 768px) {
   .nav-links, .nav-reservar { display: none; }
   .nav-toggle { display: block; }
@@ -822,15 +856,14 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
 
     <!-- Clipped interior: liquid + bubbles + ice + text -->
     <div class="cv-glass">
-      <div class="cv-liquid">
-        <div class="cv-wave-row">
-          <svg class="cv-wave-svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
-            <path d="M0,34 C180,60 360,8 540,34 C720,60 900,8 1080,34 C1260,60 1350,20 1440,34 L1440,60 L0,60 Z" fill="#9B5828"/>
-          </svg>
-          <svg class="cv-wave-svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
-            <path d="M0,34 C180,60 360,8 540,34 C720,60 900,8 1080,34 C1260,60 1350,20 1440,34 L1440,60 L0,60 Z" fill="#9B5828"/>
-          </svg>
-        </div>
+      <div class="cv-liquid"></div>
+      <div class="cv-wave-row">
+        <svg class="cv-wave-svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
+          <path d="M0,34 C180,60 360,8 540,34 C720,60 900,8 1080,34 C1260,60 1350,20 1440,34 L1440,60 L0,60 Z" fill="#9B5828"/>
+        </svg>
+        <svg class="cv-wave-svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
+          <path d="M0,34 C180,60 360,8 540,34 C720,60 900,8 1080,34 C1260,60 1350,20 1440,34 L1440,60 L0,60 Z" fill="#9B5828"/>
+        </svg>
       </div>
 
       <!-- Bubbles (10, varied size/timing/sway) -->
@@ -1434,10 +1467,11 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
     setTimeout(closeIntro, 6200);
     document.getElementById('cv-skip').addEventListener('click', closeIntro);
 
-    // Screen stars / particles — smooth soft glow only
+    // Screen stars / particles — reduced on mobile to prevent GPU overload
     (function(){
       var c = document.getElementById('cv-sparks');
       if(!c) return;
+      var isMobile = window.innerWidth < 768;
       var gold  = 'rgba(196,150,58,';
       var cream = 'rgba(245,237,214,';
       var lav   = 'rgba(190,191,254,';
@@ -1466,8 +1500,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         c.appendChild(s);
       }
 
-      // ── A. Drift sparks (22): small, float up gently
-      for(var i=0;i<22;i++){
+      // ── A. Drift sparks (8 mobile / 22 desktop)
+      for(var i=0;i<(isMobile?8:22);i++){
         var cols=[gold,cream,lav,amber];
         var sz = 1.5 + Math.random()*3;
         mkSpark('drift',{
@@ -1480,8 +1514,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         });
       }
 
-      // ── B. Bloom pulses (16): breathe in place, larger glow
-      for(var i=0;i<16;i++){
+      // ── B. Bloom pulses (5 mobile / 16 desktop)
+      for(var i=0;i<(isMobile?5:16);i++){
         var cols=[gold,lav,cream];
         var sz = 2+Math.random()*4.5;
         mkSpark('bloom',{
@@ -1493,8 +1527,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         });
       }
 
-      // ── C. Lantern floats (10): big bokeh blobs, drift slowly
-      for(var i=0;i<10;i++){
+      // ── C. Lantern floats (3 mobile / 10 desktop)
+      for(var i=0;i<(isMobile?3:10);i++){
         var sz = 4+Math.random()*8;
         var col = i%2===0 ? gold : lav;
         mkSpark('lantern',{
@@ -1507,8 +1541,8 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
         });
       }
 
-      // ── D. Shooting streaks (5): brief diagonal flashes
-      for(var i=0;i<5;i++){
+      // ── D. Shooting streaks (0 mobile / 5 desktop)
+      for(var i=0;i<(isMobile?0:5);i++){
         var s   = document.createElement('div');
         s.className = 'cv-spark streak';
         var w   = 30+Math.random()*50;
@@ -1648,14 +1682,4 @@ footer { background: #0A0C0F; padding: 3.5rem 0 2rem; border-top: 1px solid rgba
 
   // ── BACK TO TOP ──────────────────────────────────────────────
   var btt = document.getElementById('back-to-top');
-  window.addEventListener('scroll', function(){
-    var scrolled = window.scrollY || document.documentElement.scrollTop || 0;
-    btt.classList.toggle('visible', scrolled > 300);
-  }, { passive:true });
-  btt.addEventListener('click', function(){
-    window.scrollTo({ top:0, behavior:'smooth' });
-  });
-
-</script>
-</body>
-</html>
+  window.addEv
